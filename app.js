@@ -11,7 +11,7 @@ let users = [
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ message: 'CI/CD Demo API', version: '1.0.0' });
+  res.json({ message: 'CI/CD Demo API', version: '1.0.1' });
 });
 
 app.get('/health', (req, res) => {
