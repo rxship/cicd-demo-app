@@ -107,7 +107,7 @@ pipeline {
                         # Get AKS credentials (writes to ~/.kube/config)
                         az aks get-credentials \
                           --resource-group learning-rg \
-                          --name learning-aks \
+                          --name aks-learning \
                           --overwrite-existing
 
                         # Update the deployment image to the just-built tag
