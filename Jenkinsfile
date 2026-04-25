@@ -88,6 +88,42 @@ pipeline {
                 }
             }
         }
+
+    stage('Deploy to AKS') {
+            steps {
+                echo "==> Deploying to AKS..."
+                withCredentials([
+                    string(credentialsId: 'azure-sp-id', variable: 'AZ_SP_ID'),
+                    string(credentialsId: 'azure-sp-password', variable: 'AZ_SP_PASS'),
+                    string(credentialsId: 'azure-tenant-id', variable: 'AZ_TENANT')
+                ]) {
+                    sh '''
+                        # Login to Azure as the service principal
+                        az login --service-principal \
+                          --username $AZ_SP_ID \
+                          --password $AZ_SP_PASS \
+                          --tenant $AZ_TENANT
+
+                        # Get AKS credentials (writes to ~/.kube/config)
+                        az aks get-credentials \
+                          --resource-group learning-rg \
+                          --name learning-aks \
+                          --overwrite-existing
+
+                        # Update the deployment image to the just-built tag
+                        kubectl set image deployment/cicd-demo-app \
+                          cicd-demo-app=${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
+
+                        # Wait for rollout to complete (timeout 5min)
+                        kubectl rollout status deployment/cicd-demo-app --timeout=300s
+
+                        # Logout for cleanup
+                        az logout
+                    '''
+                }
+            }
+        }
+    
     }
 
     post {
